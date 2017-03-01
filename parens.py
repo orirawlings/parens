@@ -1,9 +1,5 @@
-
-def parse(tokens):
+def parse(tokens, *pairs):
     i = [0] # ugly hack due to no nonlocal
-
-    def end():
-        return i[0] >= len(tokens)
 
     def sym():
         return tokens[i[0]]
@@ -19,34 +15,41 @@ def parse(tokens):
             raise Exception('Unexpected symbol [{!r}], expected [{!r}] at position [{}]'.format(sym(), s, i[0]))
 
     def expression():
-        if end() or not accept('('):
+        if i[0] >= len(tokens):
             return True
-        expression()
-        expect(')')
-        expression()
+        for o, c in pairs:
+            if not accept(o):
+                continue
+            expression()
+            expect(c)
+            expression()
+            return True
         return True
 
     expression()
-    assert end()
+    assert i[0] >= len(tokens)
 
 if __name__ == '__main__':
-
-    def shouldfail(arg):
+    def shouldfail(*args):
         try:
-            parse(arg)
+            parse(*args)
         except:
             return
         raise Exception('Should have failed! [{!r}]'.format(arg))
 
-    parse('')
-    parse('()')
-    parse('()()')
-    parse('()()()')
-    parse('(())')
-    parse('(())(()())')
-    shouldfail(')')
-    shouldfail(')(')
-    shouldfail('(()')
-    shouldfail('())(()')
-    shouldfail('())(()')
-    
+    parse('', '()')
+    parse('()', '()')
+    parse('()()', '()')
+    parse('()()()', '()')
+    parse('(())', '()')
+    parse('(())(()())', '()')
+    shouldfail(')', '()')
+    shouldfail(')(', '()')
+    shouldfail('(()', '()')
+    shouldfail('())(()', '()')
+    shouldfail('())(()', '()')
+    parse('()', '()', '{}')
+    parse('({})', '()', '{}')
+    shouldfail('{(})', '()', '{}')
+    parse('({}ab)', '()', '{}', 'ab')
+    shouldfail('({a}b)', '()', '{}', 'ab')
