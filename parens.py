@@ -1,18 +1,15 @@
 def parse(tokens, *pairs):
     i = [0] # ugly hack due to no nonlocal
 
-    def sym():
-        return tokens[i[0]]
-
     def accept(s):
-        if sym() == s:
+        if tokens[i[0]] == s:
             i[0] += 1
             return True
         return False
 
     def expect(s):
         if not accept(s):
-            raise Exception('Unexpected symbol [{!r}], expected [{!r}] at position [{}]'.format(sym(), s, i[0]))
+            raise Exception('Unexpected symbol [{!r}], expected [{!r}] at position [{}]'.format(tokens[i[0]], s, i[0]))
 
     def expression():
         if i[0] >= len(tokens):
